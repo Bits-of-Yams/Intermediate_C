@@ -1,0 +1,20 @@
+/*	push and pop do not call each other but need to share 			
+	the same data.  This a good reason to specify an
+	external variable for the stack and the stack pointer. 				
+	Additionally, these variables should be made static to 			
+	avoid a name collision from another file		
+*/
+
+
+static float stack[STACKSIZE];
+static int sp = 0;
+
+void push(float value)
+{
+   ...
+}
+
+float pop()
+{
+   ...
+}		
