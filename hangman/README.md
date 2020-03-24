@@ -14,6 +14,5 @@ wget https://raw.githubusercontent.com/Bits-of-Yams/Intermediate_C/master/hangma
 wget https://raw.githubusercontent.com/Bits-of-Yams/Intermediate_C/master/hangman/hangman.stats
 wget https://raw.githubusercontent.com/Bits-of-Yams/Intermediate_C/master/hangman/makefile
 
-
-
-
+4. Execute the make command to generate the executable:
+make
