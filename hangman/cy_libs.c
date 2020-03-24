@@ -5,19 +5,19 @@
  * 
  * ARGUMENTS:
  * toParseString - needs to point to heap memory, it will get broken into null terminated strings
- * stringArrayPtr - needs to be the address of a variable which points to NULL, not to be confused with the address of NULL.
+ * memAddrOfPtrToCharPtrArray - needs to be the address of a variable which points to NULL, not to be confused with the address of NULL.
  *
  * DESCRIPTION:
  * The function will allocate memory on the heap. The memory will be treated as a consecutive sequence of 
- * char pointers (char *) so that array indexing and pointer arithmetic operations on stringArrayPtr 
+ * char pointers (char *) so that array indexing and pointer arithmetic operations on memAddrOfPtrToCharPtrArray 
  * will be possible. To do so, the number of bytes to allocated should be the number of char pointers times the
  * size of a char pointer.
  *
- * Think of stringArrayPtr as a pointer to memory where char pointers are stored, a double pointer; however, 
+ * Think of memAddrOfPtrToCharPtrArray as a pointer to memory where char pointers are stored, a double pointer; however, 
  * because the function allocates this memory for the user it needs to set the value of the pointer to the
- * address it allocated, therefore, stringArrayPtr's memory address is passed to the function, hence a triple pointer.
+ * address it allocated, therefore, memAddrOfPtrToCharPtrArray's memory address is passed to the function, hence a triple pointer.
  */
- int parseString(char *toParseString, char ***stringArrayPtr)
+ int parseString(char *toParseString, char ***memAddrOfPtrToCharPtrArray)
 {
 	int wordsParsed = 0;
 	char *extractedStringPtr = NULL;
@@ -26,9 +26,9 @@
 		printf("ERROR: toParseString was passed a NULL pointer in parseString\n");
 		exit(1);
 	}
-	if(NULL != *stringArrayPtr)
+	if(NULL != *memAddrOfPtrToCharPtrArray)
 	{
-		printf("ERROR: stringArrayPtr wasn't a NULL pointer in parseString\n");
+		printf("ERROR: memAddrOfPtrToCharPtrArray wasn't a NULL pointer in parseString\n");
 	}
 
 	extractedStringPtr = strtok(toParseString, " "); //strtok returns a pointer to the start of the string it tokenized
@@ -36,10 +36,10 @@
 	while(NULL != extractedStringPtr) //loop everytime there is a string pointer to store
 	{
 		wordsParsed++;
-		//the memory address of stringArrayPtr (the pointer to char pointers) was given to the function
-		//so to set where stringArrayPtr points to, dereference the triple pointer
-		*stringArrayPtr = realloc(*stringArrayPtr, wordsParsed * sizeof(char *));
-		if(NULL == *stringArrayPtr)
+		//the memory address of memAddrOfPtrToCharPtrArray (the pointer to char pointers) was given to the function
+		//so to set where memAddrOfPtrToCharPtrArray points to, dereference the triple pointer
+		*memAddrOfPtrToCharPtrArray = realloc(*memAddrOfPtrToCharPtrArray, wordsParsed * sizeof(char *));
+		if(NULL == *memAddrOfPtrToCharPtrArray)
 		{
 			printf("ERROR: malloc returned NULL in parseString\n");
 			exit(1);
@@ -51,9 +51,9 @@
 		//means that pointer arithmetic will be handled as 8byte (64bit) or 4byte (32bit) increments
 		//original string: hello\0cruel\0world		stringPtrArray: FFFFF100FFFFF106FFFFF10c
 		//	0xFFFFF... 100    106    10c		    0xFF0000... F0	F4	F8
-		//(*stringArrayPtr)     = 0xFF0000F0
-		//(*stringArrayPtr) + 1 = 0xFF0000F4  the value is incremented by 4 because of the size of a char* in this 32bit example
-		*((*stringArrayPtr) + (wordsParsed - 1)) = extractedStringPtr;
+		//(*memAddrOfPtrToCharPtrArray)     = 0xFF0000F0
+		//(*memAddrOfPtrToCharPtrArray) + 1 = 0xFF0000F4  the value is incremented by 4 because of the size of a char* in this 32bit example
+		*((*memAddrOfPtrToCharPtrArray) + (wordsParsed - 1)) = extractedStringPtr;
 		//youre dereferencing after pointer arithmetic because you want to store the pointer at that memory address
 		extractedStringPtr = strtok(NULL, " ");
 	}
@@ -65,12 +65,13 @@
  * and return the number of words read/parsed. Consider using the above function in this function?????
  *
  * IMPORTANT NOTE: getline will allocate memory on the heap. You will be using this memory outside of this
- * function so you do not want to free the memory in this function, just remember to free the stringArrayPtr
- * you pass to the function at some point before you exit the program, if you freed in this function, then
- * you'll either get bad data, broken functionality, or valgrind will throw read errors because youre reading
- * data that was freed, it may work because the data wasnt overwritten yet, but it was dangerous.
+ * function so you do not want to free the memory in this function, just remember to free the allocated memory
+ * referenced to by memAddrOfPtrToCharPtrArray that you pass to the function at some point before you exit the 
+ * program, if you freed in this function, then you'll either get bad data, broken functionality, or valgrind
+ * will throw read errors because youre reading data that was freed, it may work because the data wasnt
+ * overwritten yet, but it was dangerous.
  */
-int parseStringFile(char *fileName, char ***stringArrayPtr)
+int parseStringFile(char *fileName, char ***memAddrOfPtrToCharPtrArray)
 {
 	char *stringFromFile = NULL;
 	size_t stringFromFileBufSize = 0;
@@ -89,7 +90,7 @@ int parseStringFile(char *fileName, char ***stringArrayPtr)
 	getline(&stringFromFile, &stringFromFileBufSize, filePtr);
 	fclose(filePtr);
 	stringFromFile[strcspn(stringFromFile, "\n")] = 0; //get rid of the pesky \n and replace with a null terminator
-	parsedStrings = parseString(stringFromFile, stringArrayPtr);
+	parsedStrings = parseString(stringFromFile, memAddrOfPtrToCharPtrArray);
 
 	return parsedStrings;
 }
